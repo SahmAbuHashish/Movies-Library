@@ -2,44 +2,36 @@
 
 const express = require("express");
 const cors = require("cors");
-const data = require("./data.json");
+// const data = require("./data.json");
 
 const app = express();
 app.use(cors());
 
-// app.use(data());
-
 const port = 3000;
 
-
-function GetData (jsonData){
-    this.data = jsonData
+function MovieLibrary (title,poster_path,overview){
+    this.title = title;
+    this.poster_path = poster_path;
+    this.overview = overview;
 }
-const newGetData = new GetData (data)
-
 
 app.get('/',(req,res)=>{
-    let str = 'Welcome to home Page'
-    res.status(200).send(str);
-
-    res.status(200).json({
-"title": "Spider-Man: No Way Home",
-"poster_path": "/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
-"overview": "Peter Parker is unmasked and no longer able to separate his normal life from the high-stakes of being a super-hero. When he asks for help from Doctor Strange the stakes become even more dangerous, forcing him to discover what it truly means to be Spider-Man."
-});
+    
+    const movieData = require('./data.json')
+    const movie = new  MovieLibrary(movieData.title, movieData.poster_path, movieData.overview)
+    res.status(200).send(movie)
 });
 
 app.get('/favorite',(req,res)=>{
-    let str1 = 'Welcome to Favorite Page'
-    res.status(200).send(str1);
+    res.status(200).send('Welcome to Favorite Page');
 });
 
-app.get('*',(res,req)=>{
-    res.status(500).json({
-"status": 500,
-"responseText": "Sorry, something went wrong"
-});
-})
+// app.get('*',(res,req)=>{
+//     res.status(500).json({
+// "status": 500,
+// "responseText": "Sorry, something went wrong"
+// });
+// })
 
 app.get('*',(req,res)=>{
     res.status(404).send('page not found error')
