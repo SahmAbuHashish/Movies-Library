@@ -3,15 +3,20 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-
 const data = require("./data.json");
+const pg = require("pg");
+
 
 const app = express();
 app.use(cors());
-// app.use(errorHandler)
 require("dotenv").config();
 
+app.use(express.json());
+// app.use(errorHandler)
+
 const port = 3000;
+
+const client = new pg.Client(process.env.DATABASE_URL)
 
 //constructor
 function MovieLibrary(id, title, release_date, poster_path, overview) {
@@ -43,6 +48,9 @@ app.get('/search', searchHandlers)
 app.get('/genres', genresHandlers)
 
 app.get('/last', lastHandlers)
+
+app.get('/getMovies', getMovieHandlers)
+app.post('/addMovie', addMovieHandlers)
 
 app.get('*', (req, res) => {
     res.status(404).send('page not found error')
@@ -141,6 +149,38 @@ function lastHandlers(req, res) {
     }
 }
 
+function getMovieHandlers(req, res) {
+
+    const sql = `SELECT * FROM movie`;
+    client.query(sql)
+        .then((data) => {
+            res.send(data.rows);
+        })
+        .catch((err) => {
+            errorHandler(err, req, res);
+        })
+}
+
+//---------
+
+function addMovieHandlers(req, res) {
+
+    const movies = req.body;
+    console.log(movies);
+
+    const sql = `INSERT INTO movie (title, release_date, poster_path, comment) VALUES ($1,$2,$3,$4) RETURNING *;`
+    const values = [movies.title, movies.release_date, movies.poster_path, movies.comment];
+
+    console.log(sql);
+
+    client.query(sql, values)
+        .then((data) => {
+            res.send("your data was added !");
+        })
+        .catch(error => {
+            errorHandler(error, req, res);
+        });
+}
 //----------------------------------------------------
 
 //middleware function
@@ -153,7 +193,6 @@ function errorHandler(error, req, res) {
     res.status(500).send(err);
 }
 
-
 //-----------------------------------
 // app.get('*',(res,req)=>{
 //     res.status(500).json({
@@ -162,7 +201,9 @@ function errorHandler(error, req, res) {
 // });
 // })
 
-
-app.listen(port, () => {
-    console.log('Server listening on port: ', port);
-});
+client.connect()
+    .then(() => {
+        app.listen(port, () => {
+            console.log('Server listening on port: ', port);
+        });
+    });
