@@ -42,15 +42,15 @@ app.get('/favorite', (req, res) => {
 //----------------------------------------
 
 app.get('/trending', trendingHandlers)
-
 app.get('/search', searchHandlers)
-
 app.get('/genres', genresHandlers)
-
 app.get('/last', lastHandlers)
-
 app.get('/getMovies', getMovieHandlers)
 app.post('/addMovie', addMovieHandlers)
+
+app.delete('/DELETE/:id', deleteHandlers)
+app.put('/UPDATE/:id', updateHandlers)
+app.get('/getMovie/:id', getSpecificHandlers)
 
 app.get('*', (req, res) => {
     res.status(404).send('page not found error')
@@ -85,7 +85,7 @@ function trendingHandlers(req, res) {
     }
 }
 
-//---------------------
+//--------------
 
 function searchHandlers(req, res) {
     try {
@@ -107,7 +107,7 @@ function searchHandlers(req, res) {
     }
 }
 
-//-----------------------------------
+//------------
 
 function genresHandlers(req, res) {
     try {
@@ -128,7 +128,7 @@ function genresHandlers(req, res) {
     }
 }
 
-//------------------------------------
+//-----------
 
 function lastHandlers(req, res) {
     try {
@@ -181,6 +181,56 @@ function addMovieHandlers(req, res) {
             errorHandler(error, req, res);
         });
 }
+
+function deleteHandlers(req, res) {
+
+    const id = req.params.id;
+    const sql = `DELETE FROM movie WHERE id=${id}`;
+
+    client.query(sql)
+        .then((data) => {
+            res.status(204).json({})
+        })
+        .catch((err) => {
+            errorHandler(err, req, res);
+        })
+}
+//-------------
+
+function updateHandlers(req, res) {
+
+    const movies = req.body;
+    const id = req.params.id;
+    const sql = `UPDATE movie SET title=$1, release_date=$2, poster_path=$3,
+    comment=$4 WHERE id=${id} RETURNING *`;
+
+    const values = [movies.title, movies.release_date, movies.poster_path, movies.comment];
+
+    client.query(sql, values)
+        .then((data) => {
+            res.status(200).send(data.rows)
+        })
+        .catch((err) => {
+            errorHandler(err, req, res);
+        })
+}
+
+//------------
+
+function getSpecificHandlers(req,res){
+
+    const id = req.params.id;
+    const sql = `SELECT * FROM movie WHERE id=${id}`;
+    console.log(id);
+    client.query(sql)
+        .then((data) => {
+            res.send(data.rows);
+        })
+        .catch((err) => {
+            errorHandler(err, req, res);
+        })
+}
+
 //----------------------------------------------------
 
 //middleware function
