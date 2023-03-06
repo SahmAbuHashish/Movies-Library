@@ -52,10 +52,8 @@ app.delete('/DELETE/:id', deleteHandlers)
 app.put('/UPDATE/:id', updateHandlers)
 app.get('/getMovie/:id', getSpecificHandlers)
 
-app.get('*', (req, res) => {
-    res.status(404).send('page not found error')
-})
-
+app.get('*',notFundeHandllar)
+app.use(errorHandler)
 
 // Functions Handlers
 
@@ -232,6 +230,13 @@ function getSpecificHandlers(req,res){
 }
 
 //----------------------------------------------------
+
+
+
+function notFundeHandllar(req, res){
+    res.status(404).send('page not found error')
+}
+
 
 //middleware function
 
