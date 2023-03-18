@@ -52,7 +52,8 @@ app.delete('/DELETE/:id', deleteHandlers)
 app.put('/UPDATE/:id', updateHandlers)
 app.get('/getMovie/:id', getSpecificHandlers)
 
-app.get('*',notFundeHandllar)
+app.get('*', notFundeHandllar)
+
 app.use(errorHandler)
 
 // Functions Handlers
@@ -204,18 +205,25 @@ function updateHandlers(req, res) {
 
     const values = [movies.title, movies.release_date, movies.poster_path, movies.comment];
 
-    client.query(sql, values)
-        .then((data) => {
-            res.status(200).send(data.rows)
-        })
-        .catch((err) => {
+    client.query(sql, values).then((data) => {
+
+        const sql = `SELECT * FROM movie`;
+        client.query(sql).then((data) => {
+                res.send(data.rows);
+            })
+            .catch((err) => {
+                errorHandler(err, req, res);
+            })
+        res.status(200).send(data.rows)
+    })
+    .catch((err) => {
             errorHandler(err, req, res);
         })
 }
 
 //------------
 
-function getSpecificHandlers(req,res){
+function getSpecificHandlers(req, res) {
 
     const id = req.params.id;
     const sql = `SELECT * FROM movie WHERE id=${id}`;
@@ -233,7 +241,7 @@ function getSpecificHandlers(req,res){
 
 
 
-function notFundeHandllar(req, res){
+function notFundeHandllar(req, res) {
     res.status(404).send('page not found error')
 }
 
